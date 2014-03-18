@@ -17,6 +17,10 @@ class Insurance
     end
   end
 
+  def self.delete(ins_id)
+    DB.exec("DELETE FROM insurance WHERE id = #{ins_id};")
+  end
+
   def ==(another_insurance)
     self.name == another_insurance.name
   end

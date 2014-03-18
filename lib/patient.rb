@@ -40,6 +40,7 @@ class Patient
 
   def self.delete(patient_id)
     DB.exec("DELETE FROM patients WHERE id = #{patient_id};")
+    DB.exec("DELETE FROM doctors_patients WHERE patient_id = #{patient_id};")
   end
 
   def ==(another_patient)

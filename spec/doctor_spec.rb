@@ -30,13 +30,6 @@ describe Doctor do
     Doctor.all.should eq [test_doctor1, test_doctor2, test_doctor3]
   end
 
-  it 'populates self.all with objects recreated from data in the database'  do
-    test_doctor1 = Doctor.new({'name' => 'Dr. Pepper', 'specialty' => 'Surgeon', 'insurance' => 'KP'})
-    test_doctor1.save
-    p test_doctor1
-    test_doctor1 = []
-    p Doctor.all[0]
-  end
 
   it 'deletes the specified patient' do
     new_doctor1 = Doctor.new({'name' => 'Dr. Pepper', 'specialty' => 'Surgeon', 'insurance' => 'KP'})
@@ -45,6 +38,27 @@ describe Doctor do
     new_doctor2.save
     Doctor.delete(new_doctor1.id)
     Doctor.all.should eq [new_doctor2]
+  end
+
+  it 'adds a doctor/patient combo to doctors_patients table' do
+    test_doctor1 = Doctor.new({'name' => 'Dr. Pepper', 'specialty' => 'Surgeon', 'insurance' => 'KP'})
+    test_doctor1.save
+    new_patient1 = Patient.new({'name' => 'John Stamos', 'birthdate' => '1963-08-19', 'insurance' => 'Aetna'})
+    new_patient1.save
+    Doctor.patient_doctor_add(new_patient1.id, test_doctor1.id)
+    result = DB.exec("SELECT * FROM doctors_patients WHERE patient_id = #{new_patient1.id} AND doctor_id = #{test_doctor1.id};")
+    result.first['patient_id'].to_i.should eq new_patient1.id
+  end
+
+  it 'creates a list of patients assigned to this doctor upon initialization' do
+    test_doctor = Doctor.new({'name' => 'Dr. Seuss', 'specialty' => 'OBGYN', 'insurance' => 'Blue Shield'})
+    test_doctor.save
+    test_patient = Patient.new({'name' => 'John Stamos', 'birthdate' => '1963-08-19', 'insurance' => 'Aetna'})
+    test_patient.save
+    Doctor.patient_doctor_add(test_patient.id, test_doctor.id)
+    # test_doctor.patient_list.should eq [test_patient.id]
+    Doctor.patient_list(test_doctor.id).should eq [test_patient.name]
+
   end
 
 end

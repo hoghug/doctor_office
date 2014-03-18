@@ -1,6 +1,6 @@
 class Doctor
 
-  attr_reader :name, :id, :specialty, :insurance, :specialty_id, :insurance_id
+  attr_reader :name, :id, :specialty, :insurance, :specialty_id, :insurance_id, :patient_list
 
   def initialize(attributes)
     @name = attributes['name']
@@ -53,7 +53,44 @@ class Doctor
     DB.exec("DELETE FROM doctors WHERE id = #{doctor_id};")
   end
 
+  def self.patient_doctor_add(patient,doctor)
+    DB.exec("INSERT INTO doctors_patients (patient_id, doctor_id) VALUES ('#{patient}', '#{doctor}');")
+    self.all.each do |doctor|
+      doctor.patient_list
+    end
+  end
+
   def ==(another_doctor)
     self.id == another_doctor.id
   end
+
+  def self.patient_list(doctor_id)
+    results = DB.exec("SELECT * FROM doctors_patients WHERE doctor_id = #{doctor_id};")
+    patients = []
+    if results.first == nil
+      @patient_list = patients
+    else
+      results.each do |result|
+        patient_id = result['patient_id'].to_i
+        patient = DB.exec("SELECT * FROM patients WHERE id = #{patient_id};")
+        patients << patient.first['name']
+      end
+    end
+    @patient_list = patients
+  end
+
+
+  def doctor_appointments(doctor)
+    results = DB.exec("SELECT * FROM doctors_patients WHERE doctor_id = #{doctor_id};")
+    doc_appointments = []
+    results.each do |result|
+      patient_id = result['patient_id'].to_i
+      patient = DB.exec("SELECT * FROM patients WHERE id = #{patient_id};")
+      dp_id = result['dp_id'].to_i
+      appt = DB.exec("SELECT * FROM appointments WHERE dp_id = #{dp_id};")
+      doc_appointments << appt.first['']
+    end
+  end
+
+
 end
